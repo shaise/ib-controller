@@ -21,6 +21,7 @@ package ibcontroller;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
+import java.util.concurrent.TimeUnit;
 
 public class ExistingSessionDetectedDialogHandler implements WindowHandler {
     public boolean filterEvent(Window window, int eventId) {
@@ -49,6 +50,21 @@ public class ExistingSessionDetectedDialogHandler implements WindowHandler {
         } else if (setting.equalsIgnoreCase("manual")) {
             Utils.logToConsole("User must choose whether to continue with this session");
             // nothing to do
+        } else if (setting.equalsIgnoreCase("defered")) {
+            // reconnect after set time in minutes
+            int delay = Settings.settings().getInt("ReloginWaitPeriod", 10);
+            Utils.logToConsole("Auto reconnecting in " + delay + " minutes");
+            MyScheduledExecutorService.getInstance().schedule(new Runnable() {
+                @Override
+                public void run() {
+                    Utils.logToConsole("Auto reconnecting now");
+                    if (!SwingUtils.clickButton(window, "OK") && 
+                            !SwingUtils.clickButton(window, "Continue Login") &&
+                            !SwingUtils.clickButton(window, "Reconnect This Session"))  {
+                        Utils.logError("could not handle 'Existing session detected' dialog because the 'OK' or 'Continue Login' or 'Reconnect This Session' button wasn't found.");
+                    }
+                }
+            }, delay, TimeUnit.MINUTES);            
         } else {
             Utils.logError("could not handle 'Existing session detected' dialog because the ExistingSessionDetectedAction setting is invalid.");
         }

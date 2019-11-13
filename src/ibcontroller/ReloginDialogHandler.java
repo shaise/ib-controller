@@ -37,7 +37,7 @@ public class ReloginDialogHandler implements WindowHandler {
     @Override
     public void handleWindow(Window window, int eventID) {
         String setting = Settings.settings().getString("ExistingSessionDetectedAction", "manual");
-        if (setting.equalsIgnoreCase("primary")) {
+        if (setting.equalsIgnoreCase("primary") || setting.equalsIgnoreCase("defered")) {
             Utils.logToConsole("Re-login because this is the primary session");
             if (!SwingUtils.clickButton(window, "Re-login"))  {
                 Utils.logError("could not handle 'Re-login is required' dialog because the 'Re-login' button wasn't found.");
